@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ForêtFinance — Résultats du diagnostic</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <i class="bi bi-tree-fill me-2"></i>ForêtFinance
+      </a>
+      <a href="/" class="btn btn-outline-light btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Nouveau diagnostic
+      </a>
+    </div>
+  </nav>
+
+  <!-- Summary bar -->
+  <div class="summary-bar">
+    <div class="container">
+      <div class="row g-3 text-center">
+        <div class="col-6 col-md-3">
+          <div class="stat">
+            <div class="stat-value">{{ form_data.surface_ha }} ha</div>
+            <div class="stat-label">Surface</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat">
+            <div class="stat-value">{{ form_data.etat_peuplement | capitalize }}</div>
+            <div class="stat-label">État du peuplement</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat">
+            <div class="stat-value">{{ form_data.region }}</div>
+            <div class="stat-label">Région</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat">
+            <div class="stat-value">{{ result.eligible | length }}</div>
+            <div class="stat-label">Mécanisme{{ 's' if result.eligible | length > 1 }} éligible{{ 's' if result.eligible | length > 1 }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if geo_detected %}
+  <div class="container pt-3">
+    <span class="badge rounded-pill px-3 py-2"
+          style="background:var(--forest-primary);font-size:.85rem;font-weight:600">
+      🌍 Localisation détectée —
+      Natura 2000 : {{ 'Oui' if geo_natura else 'Non' }}
+    </span>
+  </div>
+  {% endif %}
+
+  <div class="container my-5">
+
+    <!-- No results -->
+    {% if not result.eligible %}
+    <div class="no-results mb-5">
+      <i class="bi bi-exclamation-circle" style="font-size:2rem;"></i>
+      <h4 class="mt-3">Aucun mécanisme éligible identifié</h4>
+      <p class="mb-3">
+        D'après les informations saisies, votre parcelle ne remplit pas actuellement les critères
+        des mécanismes de financement référencés.
+      </p>
+      <p class="mb-4">
+        Cela peut changer : un diagnostic terrain avec un conseiller CNPF permet souvent d'identifier
+        des opportunités non visibles à distance.
+      </p>
+      <a href="/" class="btn btn-forest">
+        <i class="bi bi-arrow-left me-1"></i>Modifier ma saisie
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- Eligible mechanisms -->
+    {% if result.eligible %}
+    <h2 class="section-title">
+      <i class="bi bi-check-circle-fill me-2" style="color:var(--forest-light)"></i>
+      Mécanismes éligibles
+    </h2>
+
+    <div class="row g-4 mb-5">
+      {% for mec in result.eligible %}
+      <div class="col-12">
+        <div class="card shadow-sm card-eligible">
+          <div class="card-body p-4">
+
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+              <div>
+                <h4 class="fw-bold mb-1" style="color:var(--forest-dark)">{{ mec.nom }}</h4>
+                <span class="badge badge-{{ mec.type }} text-white me-2">
+                  {{ mec.type | type_label }}
+                </span>
+                {% if mec.duree %}
+                <span class="badge bg-secondary">
+                  <i class="bi bi-clock me-1"></i>Engagement {{ mec.duree }} ans
+                </span>
+                {% endif %}
+              </div>
+
+              {% if mec.amount %}
+              <div class="amount-box text-center" style="min-width:160px">
+                {% if mec.amount.long_terme %}
+                <div class="amount-label mb-1">Revenus sur {{ mec.duree or 30 }} ans</div>
+                <div class="amount-value">
+                  {{ mec.amount.min | fr_num }}€
+                  <span style="font-size:.9rem;font-weight:400"> – </span>
+                  {{ mec.amount.max | fr_num }}€
+                </div>
+                <div class="amount-label mt-1">{{ mec.amount.note }}</div>
+                {% else %}
+                <div class="amount-label mb-1">Financement estimé</div>
+                {% if mec.amount.min == mec.amount.max %}
+                <div class="amount-value">{{ mec.amount.min | fr_num }}€</div>
+                {% else %}
+                <div class="amount-value">
+                  {{ mec.amount.min | fr_num }}€
+                  <span style="font-size:.9rem;font-weight:400"> – </span>
+                  {{ mec.amount.max | fr_num }}€
+                </div>
+                {% endif %}
+                <div class="amount-label mt-1">{{ mec.amount.note }}</div>
+                {% endif %}
+              </div>
+              {% endif %}
+            </div>
+
+            <p class="text-muted mb-3" style="font-size:.93rem">{{ mec.description }}</p>
+
+            <div class="row g-3">
+
+              <!-- Criteria met -->
+              <div class="col-md-6">
+                <p class="fw-semibold mb-2" style="font-size:.85rem;color:var(--forest-dark)">
+                  <i class="bi bi-check-all me-1"></i>Critères validés
+                </p>
+                <ul class="criteria-list">
+                  {% for c in mec.criteria_met %}
+                  <li>{{ c }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+
+              <!-- Steps -->
+              <div class="col-md-6">
+                <p class="fw-semibold mb-2" style="font-size:.85rem;color:var(--forest-dark)">
+                  <i class="bi bi-list-ol me-1"></i>Prochaines étapes
+                </p>
+                <ol class="steps-list">
+                  {% for step in mec.etapes %}
+                  <li>{{ step }}</li>
+                  {% endfor %}
+                </ol>
+              </div>
+
+            </div>
+
+            {% if mec.contact %}
+            <div class="mt-3 pt-3 border-top">
+              <small class="text-muted">
+                <i class="bi bi-link-45deg me-1"></i>
+                <strong>Contact :</strong> {{ mec.contact }}
+              </small>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+
+    <!-- Optimal combination -->
+    {% if result.optimal.details %}
+    <h2 class="section-title">
+      <i class="bi bi-stars me-2" style="color:var(--forest-light)"></i>
+      Combinaison optimale recommandée
+    </h2>
+
+    <div class="optimal-card mb-5">
+      <div class="row align-items-center g-4">
+        <div class="col-md-7">
+          <p class="text-white-50 text-uppercase fw-bold mb-2" style="font-size:.78rem;letter-spacing:.8px">
+            Mécanismes à empiler
+          </p>
+          <div class="mb-3">
+            {% for mec in result.optimal.details %}
+            <span class="mec-chip">
+              <i class="bi bi-check me-1"></i>{{ mec.nom }}
+            </span>
+            {% endfor %}
+          </div>
+          <p style="opacity:.85;font-size:.92rem">{{ result.optimal.description }}</p>
+        </div>
+        <div class="col-md-5 text-md-end">
+          {% if result.optimal.total_max > 0 %}
+          <p class="text-white-50 mb-1" style="font-size:.82rem">Financement direct estimé</p>
+          <div class="total-amount">
+            {% if result.optimal.total_min == result.optimal.total_max %}
+            {{ result.optimal.total_min | fr_num }} €
+            {% else %}
+            {{ result.optimal.total_min | fr_num }} – {{ result.optimal.total_max | fr_num }} €
+            {% endif %}
+          </div>
+          <p class="text-white-50 mt-1" style="font-size:.8rem">
+            (subventions + crédit d'impôt, hors revenus carbone long terme)
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+
+    <!-- Carbon estimate -->
+    <h2 class="section-title">
+      <i class="bi bi-cloud me-2" style="color:var(--forest-light)"></i>
+      Bilan carbone de votre parcelle
+    </h2>
+
+    <div class="row g-3 mb-5">
+      <div class="col-6 col-md-3">
+        <div class="carbon-stat">
+          <div class="value">{{ result.carbon.par_an }}</div>
+          <div class="unit">t CO₂ / an</div>
+          <div class="label">Séquestration annuelle</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="carbon-stat">
+          <div class="value">{{ result.carbon.sur_30_ans }}</div>
+          <div class="unit">t CO₂ sur 30 ans</div>
+          <div class="label">Séquestration totale</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="carbon-stat">
+          <div class="value">{{ result.carbon.revenu_moyen | fr_num }}</div>
+          <div class="unit">€ (moyen)</div>
+          <div class="label">Revenu carbone 30 ans</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="carbon-stat">
+          <div class="value">{{ result.carbon.revenu_min | fr_num }}–{{ result.carbon.revenu_max | fr_num }}</div>
+          <div class="unit">€</div>
+          <div class="label">Fourchette (15–30 €/t)</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-muted small mb-5">
+      <i class="bi bi-info-circle me-1"></i>
+      Estimation indicative basée sur un taux de séquestration de 5 t CO₂/ha/an (peuplement mixte).
+      Pour une valorisation effective, un audit Label Bas Carbone est nécessaire.
+    </p>
+
+
+    <!-- Charts -->
+    <h2 class="section-title">
+      <i class="bi bi-bar-chart-line me-2" style="color:var(--forest-light)"></i>
+      Visualisations financières
+    </h2>
+
+    <div class="row g-4 mb-5">
+
+      <!-- Chart 1 — Donut répartition -->
+      <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+          <div class="card-body p-4 d-flex flex-column">
+            <h6 class="fw-bold mb-3" style="color:var(--forest-dark)">
+              <i class="bi bi-pie-chart me-1"></i>Répartition des financements éligibles
+            </h6>
+            <div style="position:relative;height:300px;flex:1">
+              <canvas id="donut-financement"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart 2 — Line projection -->
+      <div class="col-lg-7">
+        <div class="card shadow-sm h-100">
+          <div class="card-body p-4 d-flex flex-column">
+            <h6 class="fw-bold mb-3" style="color:var(--forest-dark)">
+              <i class="bi bi-graph-up me-1"></i>Projection des revenus cumulés sur 30 ans
+            </h6>
+            <div style="position:relative;height:350px;flex:1">
+              <canvas id="projection-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- Comparateur Avant/Après -->
+    {% set surface_float = form_data.surface_ha | float %}
+    {% set total_cout = surface_float * 9000 %}
+    {% set pct_raw = ((result.optimal.total_max / total_cout * 100) | int) if total_cout > 0 else 0 %}
+    {% set pct_couvert = [pct_raw, 100] | min %}
+    {% set pct_charge = 100 - pct_couvert %}
+    {% set total_sur_table = result.optimal.total_max + result.carbon.revenu_moyen %}
+
+    <h2 class="section-title">
+      <i class="bi bi-arrow-left-right me-2" style="color:var(--forest-light)"></i>
+      Comparateur Avant / Après ForêtFinance
+    </h2>
+
+    <div class="comparator-card mb-5">
+      <div class="row g-0">
+
+        <!-- Sans ForêtFinance -->
+        <div class="col-md-6 comparator-sans">
+          <div class="comparator-header">
+            <i class="bi bi-x-circle me-2"></i>Sans ForêtFinance
+          </div>
+          <ul class="comparator-metrics">
+            <li>
+              <span class="comp-label">Mécanismes identifiés</span>
+              <span class="comp-value negative">0</span>
+            </li>
+            <li>
+              <span class="comp-label">Financements directs</span>
+              <span class="comp-value negative">0 €</span>
+            </li>
+            <li>
+              <span class="comp-label">Travaux à votre charge</span>
+              <span class="comp-value negative">100 %</span>
+            </li>
+            <li>
+              <span class="comp-label">Séquestration carbone valorisée</span>
+              <span class="comp-value negative">Non valorisée</span>
+            </li>
+            <li>
+              <span class="comp-label">Démarches administratives</span>
+              <span class="comp-value negative">Inconnues</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Avec ForêtFinance -->
+        <div class="col-md-6 comparator-avec">
+          <div class="comparator-header">
+            <i class="bi bi-check-circle me-2"></i>Avec ForêtFinance
+          </div>
+          <ul class="comparator-metrics">
+            <li>
+              <span class="comp-label">Mécanismes identifiés</span>
+              <span class="comp-value positive">{{ result.eligible | length }} mécanisme{{ 's' if result.eligible | length > 1 }}</span>
+            </li>
+            <li>
+              <span class="comp-label">Financement direct estimé</span>
+              <span class="comp-value positive">{{ result.optimal.total_max | fr_num }} €</span>
+            </li>
+            <li>
+              <span class="comp-label">Travaux à votre charge</span>
+              <span class="comp-value positive">{{ pct_charge }} % seulement</span>
+            </li>
+            <li>
+              <span class="comp-label">Revenus carbone potentiels sur 30 ans</span>
+              <span class="comp-value positive">{{ result.carbon.revenu_moyen | fr_num }} €</span>
+            </li>
+            <li>
+              <span class="comp-label">Temps de diagnostic</span>
+              <span class="comp-value positive">3 minutes</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="comparator-footer">
+        <i class="bi bi-piggy-bank me-2"></i>
+        Sans ForêtFinance, vous auriez laissé
+        <strong>{{ total_sur_table | fr_num }} €</strong> sur la table.
+      </div>
+    </div>
+
+
+    <!-- CTA: Être accompagné -->
+    <div class="cta-card mb-5">
+      <div class="row g-0">
+
+        <!-- Pitch -->
+        <div class="col-lg-6 cta-pitch">
+          <h3 class="cta-title mb-3">🤝 Vous souhaitez être accompagné ?</h3>
+          <p class="cta-subtitle mb-4">
+            Notre équipe prend en charge toutes les démarches administratives pour vous —
+            de la constitution du dossier jusqu'à l'obtention du financement.
+            Vous ne payez rien en avance : nous prélevons uniquement
+            <strong>2,5 % du montant des financements effectivement obtenus.</strong>
+          </p>
+          <ul class="cta-bullets">
+            <li>✅ Dossiers montés par des experts forestiers</li>
+            <li>✅ Zéro frais si zéro financement obtenu</li>
+            <li>✅ Suivi complet jusqu'au versement</li>
+          </ul>
+        </div>
+
+        <!-- Form -->
+        <div class="col-lg-6 cta-form-col">
+          <form action="/contact" method="POST">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Prénom et Nom</label>
+              <input type="text" name="nom" class="form-control"
+                     placeholder="Marie Dupont" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Email</label>
+              <input type="email" name="email" class="form-control"
+                     placeholder="marie@exemple.fr" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">
+                Téléphone <small class="opacity-75">(optionnel)</small>
+              </label>
+              <input type="text" name="telephone" class="form-control"
+                     placeholder="06 12 34 56 78">
+            </div>
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Message</label>
+              <textarea name="message" class="form-control" rows="3">Je souhaite être accompagné pour obtenir mes financements forestiers. Ma parcelle : {{ form_data.surface_ha }}ha, {{ form_data.region }}, état : {{ form_data.etat_peuplement }}.</textarea>
+            </div>
+            <button type="submit" class="btn btn-cta-submit btn-lg w-100">
+              Prendre rendez-vous gratuitement →
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- Advisory -->
+    <h2 class="section-title">
+      <i class="bi bi-chat-quote me-2" style="color:var(--forest-light)"></i>
+      Avis personnalisé du conseiller CNPF
+    </h2>
+
+    <div class="advisory-box mb-5">
+      <div class="cnpf-label">
+        <i class="bi bi-robot me-1"></i>Conseil généré par IA — Expert forestier CNPF
+      </div>
+      {% for para in advisory.split('\n\n') %}
+        {% if para.strip() %}
+        <p>{{ para.strip() | safe }}</p>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% endif %}{# end if result.eligible #}
+
+    <!-- Back button -->
+    <div class="text-center mt-4">
+      <a href="/" class="btn btn-forest btn-lg">
+        <i class="bi bi-arrow-left me-2"></i>Nouveau diagnostic
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container text-center">
+      <p class="mb-1 fw-semibold">
+        <i class="bi bi-tree-fill me-1"></i>ForêtFinance
+      </p>
+      <small>
+        Outil d'aide au diagnostic — non substitutif à un conseil personnalisé d'un gestionnaire forestier agréé.
+        Données CNPF, Ministère de la Transition Écologique, IGN.
+      </small>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  {% if result.eligible %}
+  <script>
+    // ── Data injected from Jinja2 ────────────────────────────────────────────
+    const DONUT_LABELS = [
+      {% for mec in result.eligible %}{{ mec.nom | tojson }}{% if not loop.last %},{% endif %}{% endfor %}
+    ];
+    const DONUT_DATA = [
+      {% for mec in result.eligible %}{{ (mec.amount.max if mec.amount else 0) | int }}{% if not loop.last %},{% endif %}{% endfor %}
+    ];
+    const SUBVENTION_TOTAL = {{ result.optimal.total_max | tojson }};
+    const CARBON_MOYEN     = {{ result.carbon.revenu_moyen | tojson }};
+
+    const PALETTE = ['#1a4731', '#2d6a4f', '#52b788', '#95d5b2', '#b7e4c7'];
+
+    // ── Chart 1 — Donut ──────────────────────────────────────────────────────
+    new Chart(document.getElementById('donut-financement'), {
+      type: 'doughnut',
+      data: {
+        labels: DONUT_LABELS,
+        datasets: [{
+          data: DONUT_DATA,
+          backgroundColor: DONUT_LABELS.map((_, i) => PALETTE[i % PALETTE.length]),
+          borderColor: '#ffffff',
+          borderWidth: 2,
+          hoverOffset: 8,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { padding: 14, font: { size: 12 }, color: '#2d3a32' }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                const val = ctx.parsed;
+                return ' ' + ctx.label + ' : ' + val.toLocaleString('fr-FR') + ' €';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // ── Chart 2 — Line projection ────────────────────────────────────────────
+    const YEARS      = Array.from({length: 30}, (_, i) => 'An ' + (i + 1));
+    const subvData   = Array(30).fill(SUBVENTION_TOTAL);
+    const carbonData = Array.from({length: 30}, (_, i) =>
+      Math.round(CARBON_MOYEN * (i + 1) / 30)
+    );
+    const totalData  = subvData.map((s, i) => s + carbonData[i]);
+    const zeroLine   = Array(30).fill(0);
+
+    new Chart(document.getElementById('projection-chart'), {
+      type: 'line',
+      data: {
+        labels: YEARS,
+        datasets: [
+          {
+            label: 'Subventions cumulées',
+            data: subvData,
+            borderColor: '#52b788',
+            backgroundColor: 'rgba(82,183,136,0.10)',
+            fill: true,
+            tension: 0,
+            pointRadius: 0,
+            borderWidth: 2,
+          },
+          {
+            label: 'Revenus carbone cumulés',
+            data: carbonData,
+            borderColor: '#2d6a4f',
+            backgroundColor: 'rgba(45,106,79,0.10)',
+            fill: true,
+            tension: 0,
+            pointRadius: 0,
+            borderWidth: 2,
+          },
+          {
+            label: 'Total cumulé',
+            data: totalData,
+            borderColor: '#1a4731',
+            backgroundColor: 'transparent',
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            borderWidth: 3,
+          },
+          {
+            label: '_breakeven',
+            data: zeroLine,
+            borderColor: 'rgba(220,53,69,0.65)',
+            backgroundColor: 'transparent',
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            borderWidth: 1.5,
+            borderDash: [6, 4],
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 14,
+              font: { size: 12 },
+              color: '#2d3a32',
+              filter: item => !item.text.startsWith('_'),
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                if (ctx.dataset.label.startsWith('_')) return null;
+                return ' ' + ctx.dataset.label + ' : '
+                  + ctx.parsed.y.toLocaleString('fr-FR') + ' €';
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: { maxTicksLimit: 10, color: '#666', font: { size: 11 } }
+          },
+          y: {
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: {
+              color: '#666',
+              font: { size: 11 },
+              callback: function(v) {
+                return '€' + (Math.abs(v) >= 1000 ? (v / 1000).toFixed(0) + 'k' : v);
+              }
+            }
+          }
+        }
+      }
+    });
+  </script>
+  {% endif %}
+</body>
+</html>

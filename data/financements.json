@@ -1,0 +1,494 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "source": "CNPF, Ministère de la Transition Écologique, IGN — avril 2026",
+    "description": "Base de règles d'éligibilité aux financements forestiers français pour propriétaires privés"
+  },
+
+  "mecanismes": [
+
+    {
+      "id": "lbc_boisement",
+      "nom": "Label Bas Carbone — Boisement",
+      "type": "credits_carbone",
+      "description": "Certification nationale pour la création de nouvelles forêts sur terres non boisées. Le propriétaire vend des crédits carbone à des entreprises souhaitant compenser leurs émissions.",
+      "montant": {
+        "type": "variable",
+        "description": "Revenus issus de la vente de crédits carbone sur 30 ans",
+        "estimation_tonne_co2": "15-30€ par tonne de CO2 séquestrée"
+      },
+      "duree_engagement": 30,
+      "audit": "5 ans",
+      "cumulable_avec": ["feader", "defi_travaux"],
+      "criteres_eligibilite": {
+        "obligatoires": [
+          {
+            "id": "maitrise_fonciere_30ans",
+            "label": "Maîtrise foncière du terrain ≥ 30 ans",
+            "champ_formulaire": "duree_propriete",
+            "condition": "gte",
+            "valeur": 30
+          },
+          {
+            "id": "non_boise_10ans",
+            "label": "Terrain non boisé durant les 10 dernières années",
+            "champ_formulaire": "non_boise_10ans",
+            "condition": "eq",
+            "valeur": true
+          },
+          {
+            "id": "essences_mfr",
+            "label": "Essences conformes aux arrêtés MFR",
+            "champ_formulaire": "essences_mfr",
+            "condition": "eq",
+            "valeur": true
+          },
+          {
+            "id": "plan_gestion",
+            "label": "Engagement à établir un document de gestion durable",
+            "champ_formulaire": "accepte_plan_gestion",
+            "condition": "eq",
+            "valeur": true
+          }
+        ],
+        "restrictifs": [
+          {
+            "id": "essences_experimentales",
+            "label": "Maximum 30% d'essences expérimentales sur la surface totale",
+            "champ_formulaire": "pct_essences_experimentales",
+            "condition": "lte",
+            "valeur": 30
+          },
+          {
+            "id": "travaux_non_commences",
+            "label": "Travaux non commencés avant la notification du projet",
+            "champ_formulaire": "travaux_deja_commences",
+            "condition": "eq",
+            "valeur": false
+          }
+        ]
+      },
+      "etapes_candidature": [
+        "Notification du projet sur Démarches Simplifiées (avant tout travaux)",
+        "Réalisation des plantations conformes aux arrêtés MFR",
+        "Audit de vérification à 5 ans",
+        "Reconnaissance et vente des crédits carbone"
+      ],
+      "contact": "label-bas-carbone.ecologie.gouv.fr",
+      "tags": ["carbone", "boisement", "long_terme", "revenu"]
+    },
+
+    {
+      "id": "lbc_reconstitution",
+      "nom": "Label Bas Carbone — Reconstitution",
+      "type": "credits_carbone",
+      "description": "Pour les forêts sinistrées suite à incendie, tempête ou crise sanitaire (scolytes). Le propriétaire reboîse avec des essences adaptées au climat futur et vend des crédits carbone.",
+      "montant": {
+        "type": "variable",
+        "description": "Revenus issus de la vente de crédits carbone sur 30 ans",
+        "estimation_tonne_co2": "15-30€ par tonne de CO2 séquestrée"
+      },
+      "duree_engagement": 30,
+      "audit": "5 ans",
+      "cumulable_avec": ["feader", "defi_travaux", "france_nation_verte"],
+      "criteres_eligibilite": {
+        "obligatoires": [
+          {
+            "id": "foret_sinistree",
+            "label": "Forêt ayant subi des dégâts lourds (incendie, tempête, scolytes, dépérissement massif)",
+            "champ_formulaire": "etat_peuplement",
+            "condition": "in",
+            "valeur": ["sinistre", "depérissant"]
+          },
+          {
+            "id": "maitrise_fonciere_30ans",
+            "label": "Maîtrise foncière ≥ 30 ans",
+            "champ_formulaire": "duree_propriete",
+            "condition": "gte",
+            "valeur": 30
+          }
+        ],
+        "recommandes": [
+          {
+            "id": "essences_climat",
+            "label": "Essences adaptées au changement climatique privilégiées",
+            "champ_formulaire": "essences_adaptees_climat",
+            "condition": "eq",
+            "valeur": true
+          }
+        ]
+      },
+      "etapes_candidature": [
+        "Diagnostic de l'état du peuplement sinistré",
+        "Notification du projet sur Démarches Simplifiées",
+        "Reboisement avec essences adaptées au climat futur",
+        "Audit à 5 ans et vente des crédits carbone"
+      ],
+      "contact": "label-bas-carbone.ecologie.gouv.fr",
+      "tags": ["carbone", "sinistre", "reconstitution", "scolytes"]
+    },
+
+    {
+      "id": "lbc_taillis",
+      "nom": "Label Bas Carbone — Conversion de taillis",
+      "type": "credits_carbone",
+      "description": "Pour les taillis de chênes ou châtaigniers sur bonnes stations. Conversion en futaie sur souches pour produire du bois d'œuvre à long terme tout en séquestrant du carbone.",
+      "montant": {
+        "type": "variable",
+        "description": "Revenus issus de la vente de crédits carbone sur 30 ans"
+      },
+      "duree_engagement": 30,
+      "cumulable_avec": ["defi_travaux"],
+      "criteres_eligibilite": {
+        "obligatoires": [
+          {
+            "id": "type_taillis",
+            "label": "Taillis principalement de chênes ou de châtaigniers",
+            "champ_formulaire": "type_peuplement",
+            "condition": "in",
+            "valeur": ["taillis_chene", "taillis_chataignier"]
+          },
+          {
+            "id": "bonne_station",
+            "label": "Située sur une bonne station forestière",
+            "champ_formulaire": "qualite_station",
+            "condition": "eq",
+            "valeur": "bonne"
+          }
+        ]
+      },
+      "etapes_candidature": [
+        "Évaluation de la qualité de la station forestière",
+        "Notification du projet",
+        "Sélection des plus beaux brins",
+        "Suivi sur 30 ans"
+      ],
+      "contact": "label-bas-carbone.ecologie.gouv.fr",
+      "tags": ["carbone", "taillis", "chene", "chataignier", "bois_oeuvre"]
+    },
+
+    {
+      "id": "france_nation_verte",
+      "nom": "France Nation Verte — Renouvellement forestier",
+      "type": "subvention",
+      "description": "Subvention directe pour le renouvellement de peuplements dégradés ou vulnérables au changement climatique. Successeur de France 2030 depuis 2025.",
+      "montant": {
+        "type": "pourcentage",
+        "min_pct": 40,
+        "max_pct": 80,
+        "description": "Jusqu'à 80% du montant TTC des travaux",
+        "minimum_travaux_eur": 3000,
+        "exemple": {
+          "surface_ha": 2,
+          "cout_total_eur": 19436,
+          "aide_eur": 12633,
+          "autofinancement_eur": 6803
+        }
+      },
+      "duree_engagement": 5,
+      "cumulable_avec": ["feader", "defi_travaux", "lbc_reconstitution"],
+      "criteres_eligibilite": {
+        "obligatoires": [
+          {
+            "id": "etat_peuplement",
+            "label": "Peuplement sinistré (≥20% mortalité), dépérissant (≥20% dépérissement), pauvre ou vulnérable",
+            "champ_formulaire": "etat_peuplement",
+            "condition": "in",
+            "valeur": ["sinistre", "depérissant", "pauvre", "vulnerable"]
+          },
+          {
+            "id": "montant_minimum",
+            "label": "Montant des travaux ≥ 3 000€",
+            "champ_formulaire": "surface_ha",
+            "condition": "gte",
+            "valeur": 0.5
+          }
+        ],
+        "conditionnels": [
+          {
+            "id": "deux_essences_4ha",
+            "label": "Si surface > 4 ha : minimum 2 essences obligatoires",
+            "champ_formulaire": "surface_ha",
+            "condition": "gte",
+            "valeur": 4,
+            "implique": {
+              "champ": "nb_essences",
+              "condition": "gte",
+              "valeur": 2
+            }
+          },
+          {
+            "id": "valeur_bois",
+            "label": "Valeur du bois sur pied < 3× le coût du reboisement",
+            "champ_formulaire": "valeur_bois_inferieure",
+            "condition": "eq",
+            "valeur": true
+          }
+        ],
+        "restrictifs": [
+          {
+            "id": "diagnostic_prealable",
+            "label": "Diagnostic préalable par un technicien qualifié obligatoire",
+            "champ_formulaire": "diagnostic_realise",
+            "condition": "eq",
+            "valeur": true
+          }
+        ]
+      },
+      "travaux_eligibles": [
+        "Travaux préparatoires du sol",
+        "Fourniture et installation des plants",
+        "Protections contre le gibier",
+        "Premier entretien (dégagements 3 ans)",
+        "Maîtrise d'œuvre (max 15% du total)"
+      ],
+      "etapes_candidature": [
+        "Diagnostic du peuplement par technicien CNPF, GPF ou coopérative",
+        "Dépôt du dossier auprès de l'ADEME via organisme instructeur",
+        "Obtenir l'accord AVANT de démarrer les travaux",
+        "Réalisation des travaux",
+        "Engagement de réussite du reboisement sur 5 ans"
+      ],
+      "contact": "ademe.fr — via CNPF ou coopérative forestière régionale",
+      "tags": ["subvention", "reboisement", "sinistre", "court_terme"]
+    },
+
+    {
+      "id": "feader",
+      "nom": "FEADER — Aide au reboisement",
+      "type": "subvention",
+      "description": "Fonds européen agricole pour le développement rural. Cofinance le reboisement entre 40% et 80% selon la région. Accessible aux propriétaires privés, communes et coopératives.",
+      "montant": {
+        "type": "pourcentage_regional",
+        "par_region": {
+          "Normandie": {"min_pct": 60, "max_pct": 65, "detail": "60% FEADER + 40% Région"},
+          "Auvergne-Rhône-Alpes": {"min_pct": 43, "max_pct": 60, "detail": "43% Rhône-Alpes, 60% Auvergne"},
+          "Bretagne": {"min_pct": 65, "max_pct": 80, "detail": "Taux bonifié sur projets prioritaires"},
+          "default": {"min_pct": 40, "max_pct": 65, "detail": "Variable selon région — contacter CNPF régional"}
+        },
+        "seuil_min_eur": 4000,
+        "plafond_eur": 50000,
+        "periode": "2023-2027"
+      },
+      "cumulable_avec": ["lbc_boisement", "lbc_reconstitution", "france_nation_verte", "defi_travaux"],
+      "criteres_eligibilite": {
+        "obligatoires": [
+          {
+            "id": "surface_minimum",
+            "label": "Surface minimum 4 ha (reboisement en plein) OU enrichissement avec min. 2000 plants",
+            "champ_formulaire": "surface_ha",
+            "condition": "gte",
+            "valeur": 4,
+            "alternative": {
+              "champ": "enrichissement_2000_plants",
+              "condition": "eq",
+              "valeur": true
+            }
+          },
+          {
+            "id": "depenses_minimum",
+            "label": "Seuil minimum de dépenses éligibles : 4 000€ HT",
+            "champ_formulaire": "surface_ha",
+            "condition": "gte",
+            "valeur": 1
+          }
+        ],
+        "recommandes": [
+          {
+            "id": "certification_pefc",
+            "label": "Certification PEFC ou FSC recommandée",
+            "champ_formulaire": "certification_pefc",
+            "condition": "eq",
+            "valeur": true
+          }
+        ],
+        "restrictifs": [
+          {
+            "id": "travaux_non_commences",
+            "label": "Dépenses antérieures à l'accusé de réception non éligibles",
+            "champ_formulaire": "travaux_deja_commences",
+            "condition": "eq",
+            "valeur": false
+          }
+        ]
+      },
+      "beneficiaires": [
+        "Propriétaires forestiers privés",
+        "ONF et collectivités publiques",
+        "Communes et groupements",
+        "Coopératives forestières",
+        "Entreprises de travaux forestiers (ETF)",
+        "CRPF et organismes d'animation"
+      ],
+      "etapes_candidature": [
+        "Contact du CNPF régional ou coopérative forestière pour diagnostic",
+        "Dépôt du dossier en ligne sur le portail de la Région (appel à candidatures)",
+        "Attendre l'accusé de réception AVANT de démarrer les travaux",
+        "Réalisation des travaux",
+        "Demande de paiement auprès de la Région"
+      ],
+      "contact": "CNPF régional — europe-en-france.gouv.fr",
+      "tags": ["subvention", "europeen", "reboisement", "regional"]
+    },
+
+    {
+      "id": "defi_travaux",
+      "nom": "DEFI Travaux — Crédit d'impôt forestier",
+      "type": "fiscal",
+      "description": "Crédit d'impôt de 25% sur les travaux forestiers (reboisement, amélioration, entretien). Cumulable avec les subventions sur la part non couverte.",
+      "montant": {
+        "type": "credit_impot",
+        "pct": 25,
+        "description": "25% des dépenses engagées en crédit d'impôt",
+        "base_calcul": "Part des travaux non couverte par subventions"
+      },
+      "cumulable_avec": ["lbc_boisement", "lbc_reconstitution", "lbc_taillis", "feader", "france_nation_verte"],
+      "criteres_eligibilite": {
+        "obligatoires": [
+          {
+            "id": "proprietaire_prive",
+            "label": "Propriétaire forestier privé",
+            "champ_formulaire": "type_proprietaire",
+            "condition": "eq",
+            "valeur": "prive"
+          },
+          {
+            "id": "travaux_depuis_2023",
+            "label": "Travaux réalisés depuis janvier 2023",
+            "champ_formulaire": "annee_travaux",
+            "condition": "gte",
+            "valeur": 2023
+          }
+        ]
+      },
+      "etapes_candidature": [
+        "Conserver toutes les factures des travaux forestiers",
+        "Déclarer les dépenses lors de la déclaration de revenus",
+        "Crédit déduit directement de l'impôt dû"
+      ],
+      "contact": "impots.gouv.fr — rubrique crédits d'impôt",
+      "tags": ["fiscal", "credit_impot", "cumulable", "simple"]
+    },
+
+    {
+      "id": "natura_2000",
+      "nom": "Contrats Natura 2000",
+      "type": "contrat_etat",
+      "description": "Financement à 100% des actions de préservation et restauration de milieux pour les parcelles situées dans une zone Natura 2000. Contrat signé avec l'État pour 5 ans.",
+      "montant": {
+        "type": "pourcentage",
+        "min_pct": 80,
+        "max_pct": 100,
+        "description": "Financement quasi-total des actions de restauration"
+      },
+      "duree_engagement": 5,
+      "renouvelable": true,
+      "cumulable_avec": ["defi_travaux"],
+      "criteres_eligibilite": {
+        "obligatoires": [
+          {
+            "id": "zone_natura_2000",
+            "label": "Parcelle incluse dans un site Natura 2000",
+            "champ_formulaire": "zone_natura_2000",
+            "condition": "eq",
+            "valeur": true
+          },
+          {
+            "id": "action_preservation",
+            "label": "Actions de préservation ou restauration de milieux naturels",
+            "champ_formulaire": "action_preservation",
+            "condition": "eq",
+            "valeur": true
+          }
+        ]
+      },
+      "etapes_candidature": [
+        "Vérifier l'inclusion de la parcelle sur inpn.mnhn.fr (carte interactive)",
+        "Contacter la DDT (Direction Départementale des Territoires) locale",
+        "Définir les actions avec l'animateur du site Natura 2000",
+        "Signature du contrat avec l'État",
+        "Réalisation des actions et suivi"
+      ],
+      "contact": "DDT locale — inpn.mnhn.fr pour vérifier la zone",
+      "tags": ["biodiversite", "natura2000", "etat", "restauration"]
+    }
+
+  ],
+
+  "regles_cumul": {
+    "combinaison_optimale": {
+      "label": "Combinaison maximale recommandée",
+      "mecanismes": ["france_nation_verte", "feader", "defi_travaux", "lbc_reconstitution"],
+      "description": "France Nation Verte + FEADER couvrent les travaux, DEFI Travaux réduit l'autofinancement restant, LBC génère des revenus sur 30 ans",
+      "condition": "etat_peuplement IN [sinistre, depérissant] AND duree_propriete >= 30"
+    },
+    "incompatibilites": [
+      {
+        "mecanisme_1": "france_nation_verte",
+        "mecanisme_2": "feader",
+        "note": "Cumulables mais attention aux plafonds régionaux — vérifier avec CNPF local"
+      }
+    ]
+  },
+
+  "estimateur_carbone": {
+    "description": "Estimation simplifiée de la séquestration carbone selon la surface",
+    "tonne_co2_par_ha_par_an": {
+      "feuillus": 4.5,
+      "resineux": 6.0,
+      "mixte": 5.0
+    },
+    "prix_credit_carbone_eur": {
+      "min": 15,
+      "max": 30,
+      "moyen": 22
+    },
+    "formule": "surface_ha × tonne_co2_par_ha_par_an × prix_moyen × duree_ans"
+  },
+
+  "champs_formulaire": {
+    "duree_propriete": {"type": "number", "label": "Depuis combien d'années êtes-vous propriétaire ?", "unite": "ans"},
+    "surface_ha": {"type": "number", "label": "Surface de la parcelle", "unite": "hectares"},
+    "etat_peuplement": {
+      "type": "select",
+      "label": "État actuel du peuplement forestier",
+      "options": [
+        {"valeur": "sinistre", "label": "Sinistré (incendie, tempête, scolytes — ≥20% mortalité)"},
+        {"valeur": "depérissant", "label": "Dépérissant (≥20% d'arbres malades)"},
+        {"valeur": "pauvre", "label": "Pauvre (faible productivité, peuplement dégradé)"},
+        {"valeur": "vulnerable", "label": "Vulnérable au changement climatique"},
+        {"valeur": "sain", "label": "Sain (bonne vitalité générale)"}
+      ]
+    },
+    "type_peuplement": {
+      "type": "select",
+      "label": "Type de peuplement principal",
+      "options": [
+        {"valeur": "taillis_chene", "label": "Taillis de chênes"},
+        {"valeur": "taillis_chataignier", "label": "Taillis de châtaigniers"},
+        {"valeur": "futaie_resineuse", "label": "Futaie résineuse (épicéa, pin, douglas...)"},
+        {"valeur": "futaie_feuillue", "label": "Futaie feuillue (hêtre, chêne, frêne...)"},
+        {"valeur": "mixte", "label": "Peuplement mixte"},
+        {"valeur": "non_boise", "label": "Terrain non boisé / friche"}
+      ]
+    },
+    "non_boise_10ans": {"type": "boolean", "label": "Le terrain était-il non boisé il y a 10 ans ?"},
+    "zone_natura_2000": {"type": "boolean", "label": "La parcelle est-elle dans une zone Natura 2000 ?"},
+    "type_proprietaire": {
+      "type": "select",
+      "label": "Vous êtes",
+      "options": [
+        {"valeur": "prive", "label": "Propriétaire privé (particulier)"},
+        {"valeur": "agriculteur", "label": "Agriculteur avec boisements"},
+        {"valeur": "commune", "label": "Commune / collectivité"},
+        {"valeur": "cooperative", "label": "Coopérative forestière"}
+      ]
+    },
+    "region": {
+      "type": "select",
+      "label": "Région",
+      "options": ["Normandie", "Bretagne", "Auvergne-Rhône-Alpes", "Occitanie", "Nouvelle-Aquitaine", "Grand-Est", "Île-de-France", "Bourgogne-Franche-Comté", "Hauts-de-France", "Pays-de-la-Loire", "Centre-Val-de-Loire", "Provence-Alpes-Côte-d'Azur", "Autre"]
+    },
+    "travaux_deja_commences": {"type": "boolean", "label": "Des travaux ont-ils déjà commencé sur la parcelle ?"}
+  }
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "nom": "Marie Dupont",
+    "email": "marie@exemple.fr",
+    "telephone": "06 12 34 56 78",
+    "message": "Test message",
+    "timestamp": "2026-04-25T12:21:44.351095+00:00"
+  },
+  {
+    "nom": "Jean-Pierre Martin",
+    "email": "x@x.fr",
+    "telephone": "",
+    "message": "",
+    "timestamp": "2026-04-25T12:21:44.353465+00:00"
+  }
+]
