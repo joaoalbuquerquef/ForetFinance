@@ -1,5 +1,7 @@
 # ForêtFinance
 
+🇫🇷 **Français** · 🇧🇷 [Português](README.pt-BR.md)
+
 **Diagnostic de financements forestiers pour les propriétaires privés en France.** En quelques questions, l'application
 identifie les aides auxquelles une parcelle est éligible, propose la combinaison la plus avantageuse, estime les montants
 et le potentiel carbone, puis génère un conseil personnalisé avec Claude.
